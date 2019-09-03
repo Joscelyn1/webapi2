@@ -153,4 +153,37 @@ server.get('/api/posts/:id/comments', (req, res) => {
   }
 });
 
+server.post('/api/posts/:id/comments', (req, res) => {
+  const { id } = req.params;
+  const addedComment = req.body;
+
+  if (!req.body.text) {
+    res.status(400).json({ error: 'Please add text to the comment' });
+  } else {
+    Posts.findById(id)
+      .then(response => {
+        if (!response) {
+          res
+            .status(404)
+            .json({ error: 'The post with the specified ID does not exist.' });
+        }
+        return response;
+      })
+      .then(
+        Posts.insertComment(addedComment)
+          .then(result => {
+            Posts.findCommentById(result.id).then(response =>
+              res.status(201).json(response)
+            );
+          })
+          .catch(err => {
+            res.status(500).json({ error: 'error getting the comment' });
+          })
+      )
+      .catch(error => {
+        res.status(500).json({ error: 'error adding comment to the database' });
+      });
+  }
+});
+
 module.exports = server; // CommonJS modules (node)
