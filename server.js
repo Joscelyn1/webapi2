@@ -29,41 +29,23 @@ server.get('/api/posts', (req, res) => {
     });
 });
 
-// // test query string: localhost:8000/api/movies?minrating=3
-// server.get('/api/movies', (req, res) => {
-//   const minRating = req.query.minrating;
-
-//   let result = [...movies];
-
-//   // if the client provides a minrating, filter the response
-//   if (minRating) {
-//     result = movies.filter(m => m.rating >= minRating);
-//   }
-
-//   res.status(200).json(result);
-// });
-
-// server.post('/api/movies', (req, res) => {
-//   const movie = req.body;
-
-//   // add the new id
-//   movie.id = movieId++;
-//   movies.push(movie);
-
-//   // return correct http status code for operation
-//   res.status(201).json(movies);
-// });
-
-// server.delete('/api/movies/:id', (req, res) => {
-//   const id = req.params.id;
-
-//   movies = movies.filter(m => m.id !== Number(id));
-
-//   res.status(200).json(movies);
-// });
-
-// as user of this api, I want and endpoint to see a list of actors, so that I can see all the actors
-
-// export default server; // ES2015 modules
-// module.exports = { server }; // CommonJS modules (node)
+// get a specific post
+server.get('/api/posts/:id', (req, res) => {
+  const postId = req.params.id;
+  Posts.findById(postId)
+    .then(post => {
+      if (!post) {
+        res
+          .status(404)
+          .json({ message: 'The post with the specified ID does not exist.' });
+      } else {
+        res.status(200).json(post);
+      }
+    })
+    .catch(error => {
+      res
+        .status(500)
+        .json({ message: 'The post information could not be retrieved.' });
+    });
+});
 module.exports = server; // CommonJS modules (node)
