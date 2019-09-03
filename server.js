@@ -82,12 +82,12 @@ server.post('/api/posts', (req, res) => {
 // delete a post
 
 server.delete('/api/posts/:id', (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params;
 
   Posts.remove(id)
     .then(deleted => {
       if (deleted) {
-        res.status(204).end();
+        res.status(200).json({ deleted });
       } else {
         res
           .status(404)
@@ -100,4 +100,57 @@ server.delete('/api/posts/:id', (req, res) => {
       });
     });
 });
+
+server.put('/api/posts/:id', (req, res) => {
+  const { id } = req.params;
+  const { title, contents } = req.body;
+  if (!title || !contents) {
+    res
+      .status(400)
+      .json({ error: 'Please provide title and contents for the post.' });
+  }
+
+  Posts.update(id, { title, contents })
+    .then(updated => {
+      if (updated) {
+        Posts.findById(id)
+          .then(post => res.status(200).json(post))
+          .catch(err => {
+            res
+              .status(500)
+              .json({ error: 'The post information could not be modified.' });
+          });
+      } else {
+        res
+          .status(404)
+          .json({ error: 'The post with the specified ID does not exist.' });
+      }
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .json({ error: 'The post information could not be modified.' });
+    });
+});
+
+server.get('/api/posts/:id/comments', (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    res
+      .status(404)
+      .json({ error: 'The post with the specified ID does not exist.' });
+  } else {
+    Posts.findPostComments()
+      .then(comments => {
+        res.status(200).json(comments);
+      })
+      .catch(err => {
+        res
+          .status(500)
+          .json({ error: 'The comments information could not be retrieved.' });
+      });
+  }
+});
+
 module.exports = server; // CommonJS modules (node)
