@@ -5,7 +5,7 @@
 // see only released movies
 
 const express = require('express');
-
+const Posts = require('./data/db.js');
 const server = express();
 
 server.use(express.json()); // teaches express to parse JSON body
@@ -13,6 +13,20 @@ server.use(express.json()); // teaches express to parse JSON body
 // sanity check endpoint
 server.get('/', (req, res) => {
   res.status(200).json({ api: 'is up up and away' });
+});
+
+// see a list of posts
+server.get('/api/posts', (req, res) => {
+  // Posts.find() returns a promise, we need the bros(.then, .catch)
+  Posts.find()
+    .then(posts => {
+      res.status(200).json(posts);
+    })
+    .catch(error => {
+      res
+        .status(500)
+        .json({ error: 'The posts information could not be retrieved.' });
+    });
 });
 
 // // test query string: localhost:8000/api/movies?minrating=3
